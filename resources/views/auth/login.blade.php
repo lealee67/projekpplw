@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Login')
 @section('content')
-<<<<<<< HEAD
+
 <div class="min-h-[calc(100vh-4rem)] bg-[#FAFAFA] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 font-['Plus_Jakarta_Sans',sans-serif]">
     <div class="max-w-6xl w-full mx-auto flex justify-center">
         <div class="w-full max-w-md bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition duration-300 overflow-hidden">
@@ -98,14 +98,5 @@
         </div>
     </div>
 </div>
-=======
-<form method="POST" action="{{ route('login') }}" class="max-w-sm mx-auto bg-white p-6 rounded shadow space-y-3">
-    @csrf
-    <h1 class="text-xl font-bold">Login</h1>
-    <input name="email" type="email" value="{{ old('email') }}" placeholder="Email" class="w-full border rounded p-2">
-    <input name="password" type="password" placeholder="Password" class="w-full border rounded p-2">
-    <label class="text-sm"><input type="checkbox" name="remember"> Ingat saya</label>
-    <button class="w-full bg-orange-600 text-white rounded p-2">Masuk</button>
-</form>
->>>>>>> e1589bd7f2265adc53f486181f44d8f0a06c92c2
+
 @endsection
