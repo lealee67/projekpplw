@@ -18,20 +18,47 @@ class TeamSpaceController extends Controller
 
     public function storeTask(TaskRequest $request, Room $room)
     {
-        $room->tasks()->create($request->validated() + ['created_by' => substr($request->user()->username ?? $request->user()->name, 0, 20)]);
+        $room->tasks()->create(
+            $request->validated() + [
+                'created_by' => substr($request->user()->username ?? $request->user()->name, 0, 20),
+                'created_by_user_id' => $request->user()->id, ]);
+
         return back()->with('success', 'Task ditambahkan.');
     }
 
     public function updateTask(TaskRequest $request, Room $room, Task $task)
     {
         abort_unless($task->room_id === $room->id, 404);
-        $task->update($request->validated());
-        return back()->with('success', 'Task diperbarui.');
+
+        $user = $request->user();
+        $isOwner = $room->user_id === $user->id;
+        $isCreator = $task->created_by_user_id === $user->id;
+        $anggota = $room->anggota()->where('user_id', $user->id)->first();
+        $isAssignee = $anggota && $task->anggota_id === $anggota->id;
+
+         if ($isOwner || $isCreator) {
+            $task->update($request->validated());
+        } elseif ($isAssignee) {
+            $data = $request->validate([
+            'status_id' => ['required', 'exists:status,id'],
+            'link_attachment_task' => ['nullable', 'url'],
+        ]);
+
+        $task->update($data);
+    } else {
+        abort(403, 'Kamu tidak memiliki akses untuk mengedit task ini.');
     }
+        return back()->with('success', 'Task diperbarui.');
+}
 
     public function destroyTask(Room $room, Task $task)
     {
         abort_unless($task->room_id === $room->id, 404);
+        $user = request()->user();
+        $isOwner = $room->user_id === $user->id;
+        $isCreator = $task->created_by_user_id === $user->id;
+
+        abort_unless($isOwner || $isCreator, 403, 'Kamu tidak memiliki akses untuk menghapus task ini.');
         $task->delete();
         return back()->with('success', 'Task dihapus.');
     }
@@ -39,7 +66,7 @@ class TeamSpaceController extends Controller
     // Fitur 11: Project Resources (link grup/drive/figma/github) disimpan di room
     public function updateResources(\Illuminate\Http\Request $request, Room $room)
     {
-        $data = $request->validate(['link_groupchat' => ['nullable', 'url', 'max:40']]);
+        $data = $request->validate(['link_groupchat' => ['nullable', 'url', 'max:255']]);
         $room->update($data);
         return back()->with('success', 'Resource diperbarui.');
     }
